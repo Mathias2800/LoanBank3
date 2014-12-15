@@ -16,14 +16,14 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import utilities.xml.xmlMapper;
 
 public class LoanBankThreeGateway implements IloanBankThreeGateway {
 
     private static final String EXCHANGE_NAME = "loan_bank_three";
     private static final String IN_QUEUE_NAME = "loan_bank_number_three";
-    private static Bank bank = new Bank();
+    private static final Bank bank = new Bank();
 
     public static void main(String[] args) throws IOException {
 
@@ -48,9 +48,10 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                 String message = new String(delivery.getBody());
                 System.out.println("Message: " + message);
-                String replyTo = delivery.getProperties().getReplyTo();
+                //String replyTo = delivery.getProperties().getReplyTo();
+                String replyTo = "bank_four_normalizer";
                 BasicProperties prop = new BasicProperties().builder().correlationId(delivery.getProperties().getCorrelationId()).build();
-                channel.basicPublish("", replyTo, prop, gateway.getBankReply(message).getBytes());
+                channel.basicPublish("normalizer_exchange", replyTo, prop, gateway.getBankReply(message).getBytes());
             } catch (InterruptedException ex) {
                 System.out.println("Interupted" + Arrays.toString(ex.getStackTrace()));
             } catch (ShutdownSignalException ex) {
@@ -92,13 +93,22 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.newDocument();
-            Node loanResponse = doc.createElement("LoanResponse");
-            loanResponse.appendChild(doc.createElement("ssn")).appendChild(doc.createTextNode(ssn));
-            loanResponse.appendChild(doc.createElement("bankName")).appendChild(doc.createTextNode(bank.getBankName()));
-            loanResponse.appendChild(doc.createElement("interestRate")).appendChild(doc.createTextNode(Float.toString(ReplyBank)));
+            Element loanResponse = doc.createElement("LoanResponse");
+            doc.appendChild(loanResponse);
+            
+            
+            Element ssnE = doc.createElement("ssn");
+            ssnE.appendChild(doc.createTextNode(ssn));
+            Element bankName = doc.createElement("bankName");
+            bankName.appendChild(doc.createTextNode(bank.getBankName()));
+            Element interestRate = doc.createElement("intrestRate");
+            interestRate.appendChild(doc.createTextNode(Float.toString(ReplyBank)));
+            loanResponse.appendChild(ssnE);
+            loanResponse.appendChild(bankName);
+            loanResponse.appendChild(interestRate);
 
             body = xmlMapper.getStringFromDoc(doc);
-            System.out.println("reply" + body );
+            System.out.println("reply " + body );
         } catch (ParserConfigurationException ex) {
             ex.printStackTrace();
         }
