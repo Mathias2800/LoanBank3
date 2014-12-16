@@ -7,6 +7,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
+import dk.cphbusiness.connection.ConnectionCreator;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilder;
@@ -28,13 +29,8 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
     public static void main(String[] args) throws IOException {
 
         IloanBankThreeGateway gateway = new LoanBankThreeGateway();
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setUsername("nicklas");
-        factory.setPassword("cph");
-        factory.setHost("datdb.cphbusiness.dk");
-
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
+        ConnectionCreator creator = ConnectionCreator.getInstance();
+        Channel channel = creator.createChannel();
         channel.queueDeclare(IN_QUEUE_NAME, false, false, false, null);
         channel.exchangeDeclare(EXCHANGE_NAME, "direct");
         channel.queueBind(IN_QUEUE_NAME, EXCHANGE_NAME, "");
@@ -77,26 +73,22 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
                     Integer.parseInt(xPath.compile("/LoanRequest/loanDuration").evaluate(doc)),
                     Double.parseDouble(xPath.compile("/LoanRequest/loanAmount").evaluate(doc)));
         } catch (XPathExpressionException ex) {
-           ex.getStackTrace();
+            ex.getStackTrace();
         }
 
         return getResultMessage(ReplyBank, ssn);
     }
 
-  
-
     public String getResultMessage(float ReplyBank, String ssn) {
         String body = "";
         try {
 
-            
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.newDocument();
             Element loanResponse = doc.createElement("LoanResponse");
             doc.appendChild(loanResponse);
-            
-            
+
             Element ssnE = doc.createElement("ssn");
             ssnE.appendChild(doc.createTextNode(ssn));
             Element bankName = doc.createElement("bankName");
@@ -108,7 +100,7 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
             loanResponse.appendChild(interestRate);
 
             body = xmlMapper.getStringFromDoc(doc);
-            System.out.println("reply " + body );
+            System.out.println("reply " + body);
         } catch (ParserConfigurationException ex) {
             ex.printStackTrace();
         }
