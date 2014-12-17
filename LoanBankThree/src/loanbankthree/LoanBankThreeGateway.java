@@ -22,8 +22,7 @@ import utilities.xml.xmlMapper;
 
 public class LoanBankThreeGateway implements IloanBankThreeGateway {
 
-    private static final String EXCHANGE_NAME = "loan_bank_three";
-    private static final String IN_QUEUE_NAME = "loan_bank_number_three";
+    private static final String IN_QUEUE_NAME = "bank_three_gr1";
     private static final Bank bank = new Bank();
 
     public static void main(String[] args) throws IOException {
@@ -32,8 +31,6 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
         ConnectionCreator creator = ConnectionCreator.getInstance();
         Channel channel = creator.createChannel();
         channel.queueDeclare(IN_QUEUE_NAME, false, false, false, null);
-        channel.exchangeDeclare(EXCHANGE_NAME, "direct");
-        channel.queueBind(IN_QUEUE_NAME, EXCHANGE_NAME, "");
         QueueingConsumer consumer = new QueueingConsumer(channel);
         channel.basicConsume(IN_QUEUE_NAME, consumer);
 
