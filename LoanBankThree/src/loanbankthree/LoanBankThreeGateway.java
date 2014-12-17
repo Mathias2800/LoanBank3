@@ -89,7 +89,7 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
             ssnE.appendChild(doc.createTextNode(ssn));
             Element bankName = doc.createElement("bankName");
             bankName.appendChild(doc.createTextNode(bank.getBankName()));
-            Element interestRate = doc.createElement("intrestRate");
+            Element interestRate = doc.createElement("interestRate");
             interestRate.appendChild(doc.createTextNode(Float.toString(ReplyBank)));
             loanResponse.appendChild(ssnE);
             loanResponse.appendChild(bankName);
