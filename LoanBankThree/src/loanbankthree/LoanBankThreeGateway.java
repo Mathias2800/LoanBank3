@@ -41,8 +41,7 @@ public class LoanBankThreeGateway implements IloanBankThreeGateway {
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                 String message = new String(delivery.getBody());
                 System.out.println("Message: " + message);
-                //String replyTo = delivery.getProperties().getReplyTo();
-                String replyTo = "bank_four_normalizer";
+                String replyTo = delivery.getProperties().getReplyTo();
                 BasicProperties prop = new BasicProperties().builder().correlationId(delivery.getProperties().getCorrelationId()).build();
                 channel.basicPublish("normalizer_exchange", replyTo, prop, gateway.getBankReply(message).getBytes());
             } catch (InterruptedException ex) {
